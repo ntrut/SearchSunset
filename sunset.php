@@ -7,26 +7,24 @@
 
 <style>
 
-.container {
-  position: relative;
-  text-align: : center;
+#gallerytext{
+  text-align: center;
 }
 
-.center{
-  display: block;
-  margin-left: auto;
-  margin-right: auto;
-  width: 50%;
+#gallery {
+  display: flex;
+  padding: 0 -8px;
+  text-align: center;
+  flex-wrap: wrap;
+  border: 1px solid black;
 }
 
-#imageText {
-  z-index: 100;
-  position: absolute;
-  color: white;
-  font-size: 12px;
-  font-weight: bold;
-  left: 400px;
-  top: 465px;
+#gallery img{
+  float: left;
+  margin: 10px;
+  width: 400px;
+  height: 300px;
+
 }
 
 
@@ -41,7 +39,7 @@
     <input type="submit" onclick="Submit()" value="Show Sunset">
     </div>
 
-<p> Testing my Calender input </p>
+
 
 
 
@@ -103,9 +101,27 @@ AND WRITES THEM TO A TEXT FILE -->
 IF THERE IS NO SUNSET PICTURE ON THAT DATE,
 WE FIND THE CLOSEST PICTURE TO THAT DATE-->
 <script type="text/javascript">
+
+
+  function displayGallery(gallery)
+  {
+    const gal = document.getElementById('gallery');
+
+    /*remove previous images*/
+    document.getElementById('gallery').innerHTML = "";
+
+    for(let i = 0; i < gallery.length; i++)
+    {
+      const img = new Image();
+      //alert(gallery[i]);
+      img.src = gallery[i];
+      gal.append(img);
+    }
+  }
+
+
   /*GET PICTURE WITH THE USER input
   IF THERE IS NO SUNSET ON THAT DATE, GET THE closest SUNSET PICTURE TO THAT DATE*/
-
   function Submit(){
     var inputdate = document.getElementById("datepicker").value;
     var min = new Date('2016-01-01');
@@ -136,6 +152,7 @@ WE FIND THE CLOSEST PICTURE TO THAT DATE-->
   function searchByDate(mm, dd, yyyy, inputdate)
   {
     var found = 0;
+    var galleryArray = [];
 
     var i = 0;
     /*THIS CHECKS IF THERE IS A SUNSET PICTURE FOR THE DATE THE USER ENTERED
@@ -149,18 +166,13 @@ WE FIND THE CLOSEST PICTURE TO THAT DATE-->
       if(year == yyyy && month == mm && day == dd)
       {
         found = 1;
-        //alert("Found closest date: " + lines[i]);
         current = "/pictures/" + lines[i];
-
-        //update the picture text
-        document.getElementById("imageText").innerHTML = "Sunset on: " + month + "/" + day + "/" + year;
-        image = document.getElementById('image');
-        image.src = current;
-        //alert(current);
-
+        galleryArray.push(current);
       }
+
       i = i + 1;
   }
+
   /*IF THERE WAS NO SUNSET PICTURE FOUND FOR THE INPUT DATE THEN WE NEED TO FIND THE
   CLOSEST SUNSET PICTURE TO THAT DATE*/
   if(found == 0)
@@ -177,6 +189,8 @@ WE FIND THE CLOSEST PICTURE TO THAT DATE-->
 
     while(isPastSunset == 0 && isFutureSunset == 0)
     {
+      var pastGallery = [];
+      var futureGallery = [];
       futureDate.setDate(futureDate.getDate() + 1);
       pastDate.setDate(pastDate.getDate() - 1);
 
@@ -201,6 +215,7 @@ WE FIND THE CLOSEST PICTURE TO THAT DATE-->
           //alert("found future sunset at: " + futureMonth + "/" + futureDay + "/" + futureYear)
           isFutureSunset = 1;
           currentFuture = "/pictures/" + lines[i];
+          futureGallery.push(currentFuture);
 
         }
         if(year == pastYear && month == pastMonth && day == pastDay)
@@ -208,38 +223,39 @@ WE FIND THE CLOSEST PICTURE TO THAT DATE-->
           //alert("found past sunset at: " + pastMonth + "/" + pastDay + "/" + pastYear)
           isPastSunset = 1;
           currentPast = "/pictures/" + lines[i];
+          pastGallery.push(currentPast);
 
         }
 
-        /*COMPARE BOTH FUTURE DATE AND PAST DATE*/
         i++;
       }
 
     }
 
-    /*IF IS PASTSUNSET WAS FOUND THEN DISPLAY THAT PCITURE
-    IF FUTURESUNSET WAS FOUND THEN DISPLAY THAT PICTURES
+    /*IF IS PAST SUNSET WAS FOUND THEN DISPLAY THAT PCITURE
+    IF FUTURE SUNSET WAS FOUND THEN DISPLAY THAT PICTURES
     IF BOTH WERE FOUND THAT ARE THE SAME DAYS FROM THE USER DATE INPUT
     THEN DISPLAY THE PAST PICTURE*/
-
     if(isFutureSunset == 1 && isPastSunset == 1)
     {
-      document.getElementById("imageText").innerHTML = "Sunset not found on " + mm + "/" + dd + "/" + yyyy + ", Closest Sunset on: " + pastMonth + "/" + pastDay + "/" + pastYear;
-      image = document.getElementById('image');
-      image.src = currentPast;
+      document.getElementById("gallerytext").innerHTML = "No Pretty Sunset on " + mm + "/" + dd + "/" + yyyy + ", Closest Sunset on: " + pastMonth + "/" + pastDay + "/" + pastYear;
+      displayGallery(pastGallery);
     }
     else if(isPastSunset == 1)
     {
-      document.getElementById("imageText").innerHTML = "Sunset not found on " + mm + "/" + dd + "/" + yyyy + ", Closest Sunset on: " + pastMonth + "/" + pastDay + "/" + pastYear;
-      image = document.getElementById('image');
-      image.src = currentPast;
+      document.getElementById("gallerytext").innerHTML = "No Pretty Sunset on " + mm + "/" + dd + "/" + yyyy + ", Closest Sunset on: " + pastMonth + "/" + pastDay + "/" + pastYear;
+      displayGallery(pastGallery);
     }
     else if(isFutureSunset == 1)
     {
-      document.getElementById("imageText").innerHTML = "Sunset not found on " + mm + "/" + dd + "/" + yyyy + ", Closest Sunset on: " + futureMonth + "/" + futureDay + "/" + futureYear;
-      image = document.getElementById('image');
-      image.src = currentFuture;
+      document.getElementById("gallerytext").innerHTML = "No Pretty Sunset on " + mm + "/" + dd + "/" + yyyy + ", Closest Sunset on: " + futureMonth + "/" + futureDay + "/" + futureYear;
+      displayGallery(futureGallery);
     }
+  }
+  else
+  {
+    document.getElementById("gallerytext").innerHTML = "Sunset on: " + mm + "/" + dd + "/" + yyyy;
+    displayGallery(galleryArray);
   }
 
 
@@ -287,18 +303,21 @@ function getCurrentPicture(lines)
 {
   //alert(lines[0]);
   var today = new Date();
-  //alert("in current: " + today);
-  var dd = parseInt(String(today.getDate()).padStart(2, '0'));
-  var mm = parseInt(String(today.getMonth() + 1).padStart(2, '0')); //January is 0!
-  var yyyy = today.getFullYear();
+  var lastestGallery = [];
   var current;
-
+  var tdd;
+  var tmm;
+  var tyyyy;
 
   /*FIND THE MOST RECENT PICTURE*/
   var found = 0;
   while(found == 0)
   {
-    //alert(yyyy);
+
+    tdd = today.getDate();
+    tmm = today.getMonth() + 1;
+    tyyyy = today.getFullYear();
+
     /*LOOP THROUGH THE FILE*/
     var i = 0;
     while(lines[i] != null)
@@ -307,16 +326,12 @@ function getCurrentPicture(lines)
       var month = parseInt(lines[i].substring(4,6));
       var day = parseInt(lines[i].substring(6,8));
 
-      if(year == yyyy && month == mm && day == dd)
+      if(year == tyyyy && month == tmm && day == tdd)
       {
         found = 1;
-        //alert("Found closest date: " + lines[i]);
         current = "/pictures/" + lines[i];
+        lastestGallery.push(current);
 
-        //update the picture text
-        document.getElementById("imageText").innerHTML = "Lastest Sunset: " + month + "/" + day + "/" + year;
-
-        //alert(current);
       }
 
 
@@ -324,46 +339,24 @@ function getCurrentPicture(lines)
     }
 
     /*GO ONE DAY IN THE PAST*/
-    dd = dd - 1;
-    if(dd == 0)
+    if(found != 1)
     {
-
-      mm = mm - 1;
-      if(mm == 0)
-      {
-        mm = 12;
-        yyyy = yyyy - 1;
-      }
-
-
-      if(mm == 04 || mm == 06 || mm == 09 || mm == 11)
-      {
-        dd = 30;
-      }
-      else if(mm == 02)
-      {
-        dd = 28;
-        //check for leap year??
-      }
-      else {
-        dd = 31;
-      }
+      today.setDate(today.getDate() - 1);
 
     }
 
   }
-  image = document.getElementById('image');
-  image.src = current;
+  //update the picture text
+  document.getElementById("gallerytext").innerHTML = "Lastest Sunset: " + tmm + "/" + tdd + "/" + tyyyy;
+  displayGallery(lastestGallery);
 
 }
 
 </script>
 
+<h2 id="gallerytext"> </h2>
+<div id="gallery">
 
-
-<div class="container">
-<img id="image" src=" " width="650px" height="500px" class="center"/>
-<p id="imageText"></p>
 </div>
 
 
